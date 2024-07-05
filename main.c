@@ -35,7 +35,7 @@ volatile uint8_t  checkSW3           = 0;
 volatile uint32_t firstSW3Press      = 0;
 volatile uint32_t pressSW3Count      = 0;
 
-volatile uint32_t previous_adc_value = 0;
+volatile uint8_t volume = 0;
 volatile uint32_t current_adc_value  = 0;
 
 volatile uint8_t  vol_flag           = 0;
@@ -50,11 +50,11 @@ volatile uint8_t  vol_flag           = 0;
 static inline void Check_ADC()
 {
     if(tickCount % 200 == 0)
-    {
-        if(previous_adc_value != current_adc_value)
+    {       
+        if(volume != adc_value_to_volume(current_adc_value))
         {
             vol_flag = 1;
-            previous_adc_value = current_adc_value;
+            volume = adc_value_to_volume(current_adc_value);
         }
     }
 }
@@ -109,7 +109,7 @@ static inline void Check_SW3()
     }
 }
 
-static inline uint8_t ADC_value_scale(uint32_t value)
+static inline uint8_t adc_value_to_volume(uint32_t value)
 {
     return (uint8_t)(value * 100 / ADC_RESOLUTION + 1);
 }
@@ -216,7 +216,7 @@ int main(void)
 
         if(vol_flag)
         {
-            push_message('9', ADC_value_scale(current_adc_value));
+            push_message('9', volume);
             vol_flag = 0;
         }
     }
