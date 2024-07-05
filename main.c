@@ -44,8 +44,8 @@ volatile uint8_t checkSW3 = 0;
 volatile uint32_t firstSW3Press = 0;
 volatile uint32_t pressSW3Count = 0;
 
-volatile uint16_t previous_adc_value = 0;
-volatile uint8_t current_adc_value = 0;
+volatile uint32_t previous_adc_value = 0;
+volatile uint32_t current_adc_value = 0;
 
 volatile uint8_t vol_flag = 0;
 
@@ -333,7 +333,7 @@ int main(void)
     	}
 
     	if(vol_flag) {
-			push_message('9', current_adc_value);
+			push_message('9', (uint8_t)current_adc_value);
     		vol_flag = 0;
     	}
     }
