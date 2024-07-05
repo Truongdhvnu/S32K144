@@ -34,6 +34,11 @@ typedef struct _sim_adc0_opt
 /******************************************************************************
  * API
  ******************************************************************************/
+/**
+ * @brief Select ADC0 trigger options.
+ *
+ * @param option  pointer to sim_adc0_opt_t
+ */
 static inline void SIM_DRV_ADC0option(sim_adc0_opt_t *option)
 {
     SIM->ADCOPT |= SIM_ADCOPT_ADC0TRGSEL(option->ADC_Trigger_source) |

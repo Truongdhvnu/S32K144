@@ -43,7 +43,6 @@ void LPIT_DRV_SetupChannel(LPIT_Type *base, lpit_chnl_t channel, const lpit_chnl
     /* Setup the channel counters operation mode, trigger operation, chain mode */
     reg = (LPIT_TMR_TCTRL_MODE(chnlSetup->timerMode)             |
            LPIT_TMR_TCTRL_TRG_SRC(chnlSetup->triggerSource)      |
-           LPIT_TMR_TCTRL_TRG_SEL(chnlSetup->triggerSelect)      |
            LPIT_TMR_TCTRL_TROT(chnlSetup->enableReloadOnTrigger) |
            LPIT_TMR_TCTRL_TSOI(chnlSetup->enableStopOnTimeout)   |
            LPIT_TMR_TCTRL_TSOT(chnlSetup->enableStartOnTrigger)  |

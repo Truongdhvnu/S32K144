@@ -16,7 +16,7 @@
 /**
  * @brief Enable a device specific interrupt.
  *
- * @param IRQn      Interrupt number
+ * @param IRQn  Interrupt number
  */
 void NVIC_EnableIRQ(IRQn_Type IRQn);
 

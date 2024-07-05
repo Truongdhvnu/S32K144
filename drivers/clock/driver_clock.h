@@ -9,10 +9,7 @@
 /******************************************************************************
  * Definitions
  ******************************************************************************/
-/**
- * @brief Peripheral clock name definition used for clock gate, clock source
- * and clock divider setting
- */
+/* @brief Peripheral clock name definition. */
 typedef enum _clock_ip_name
 {
     CLOCK_PORTA   = PCC_PORTA_INDEX,
@@ -23,6 +20,7 @@ typedef enum _clock_ip_name
     CLOCK_ADC0    = PCC_ADC0_INDEX,
     CLOCK_LPUART1 = PCC_LPUART1_INDEX,
     CLOCK_LPIT    = PCC_LPIT_INDEX,
+    CLOCK_DMAMUX  = PCC_DMAMUX_INDEX,
 } clock_ip_name_t;
 
 /* @brief Clock source for peripherals that support various clock selections. */
@@ -45,14 +43,14 @@ typedef enum _scg_async_clk
 /* @brief SCG asynchronous clock divider value. */
 typedef enum _scg_async_clk_div
 {
-    SCG_AsyncClkDisable = 0U, /*!< Clock output is disabled.  */
-    SCG_AsyncClkDivBy1  = 1U, /*!< Divided by 1.              */
-    SCG_AsyncClkDivBy2  = 2U, /*!< Divided by 2.              */
-    SCG_AsyncClkDivBy4  = 3U, /*!< Divided by 4.              */
-    SCG_AsyncClkDivBy8  = 4U, /*!< Divided by 8.              */
-    SCG_AsyncClkDivBy16 = 5U, /*!< Divided by 16.             */
-    SCG_AsyncClkDivBy32 = 6U, /*!< Divided by 32.             */
-    SCG_AsyncClkDivBy64 = 7U  /*!< Divided by 64.             */
+    SCG_AsyncClkDisable = 0U, /* Clock output is disabled.  */
+    SCG_AsyncClkDivBy1  = 1U, /* Divided by 1.              */
+    SCG_AsyncClkDivBy2  = 2U, /* Divided by 2.              */
+    SCG_AsyncClkDivBy4  = 3U, /* Divided by 4.              */
+    SCG_AsyncClkDivBy8  = 4U, /* Divided by 8.              */
+    SCG_AsyncClkDivBy16 = 5U, /* Divided by 16.             */
+    SCG_AsyncClkDivBy32 = 6U, /* Divided by 32.             */
+    SCG_AsyncClkDivBy64 = 7U  /* Divided by 64.             */
 } scg_async_clk_div_t;
 
 /******************************************************************************
@@ -85,8 +83,8 @@ static inline void CLOCK_DRV_DisableClock(clock_ip_name_t name)
  * clock source, should only use this function for the modules need source
  * setting.
  *
- * @param name Which peripheral to check, see \ref clock_ip_name_t.
- * @param src Clock source to set.
+ * @param name  Which peripheral to check, see \ref clock_ip_name_t.
+ * @param src   Clock source to set, see \ref clock_ip_src_t.
  */
 static inline void CLOCK_DRV_SetIpSrc(clock_ip_name_t name, clock_ip_src_t src)
 {
@@ -96,8 +94,8 @@ static inline void CLOCK_DRV_SetIpSrc(clock_ip_name_t name, clock_ip_src_t src)
 /**
  * @brief Set the asynchronous clock divider.
  *
- * @param asyncClk Which asynchronous clock to configure.
- * @param divider The divider value to set.
+ * @param asyncClk  Which asynchronous clock to configure.
+ * @param divider   The divider value to set.
  *
  * @note There might be glitch when changing the asynchronous divider, so make sure
  * the asynchronous clock is not used while changing divider.

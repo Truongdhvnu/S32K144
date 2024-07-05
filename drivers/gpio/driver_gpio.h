@@ -30,9 +30,9 @@ typedef struct _gpio_pin_config
 /**
  * @brief Initializes a GPIO pin used by the board.
  *
- * @param base   GPIO peripheral base pointer (PTA, PTB, PTC, ...)
- * @param pin    GPIO port pin number
- * @param config GPIO pin configuration pointer
+ * @param base    GPIO peripheral base pointer (PTA, PTB, PTC, ...)
+ * @param pin     GPIO port pin number
+ * @param config  GPIO pin configuration pointer
  */
 void GPIO_DRV_PinInit(GPIO_Type *base,uint32_t pin,const gpio_pin_config_t *config);
 
@@ -60,8 +60,8 @@ static inline void GPIO_DRV_PinWrite(GPIO_Type *base, uint32_t pin, uint8_t outp
 /**
  * @brief Reverses the current output logic of the multiple FGPIO pins.
  *
- * @param base FGPIO peripheral base pointer (PTA, PTB, PTC, ...)
- * @param mask FGPIO pin number
+ * @param base  GPIO peripheral base pointer (PTA, PTB, PTC, ...)
+ * @param mask  GPIO pin number
  */
 static inline void GPIO_DRV_PortToggle(GPIO_Type *base, uint32_t pin)
 {

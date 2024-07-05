@@ -70,16 +70,19 @@ static inline void PORT_DRV_SetPinMux(PORT_Type *base, uint32_t pin, port_mux_t 
  *        - #PORT_InterruptEitherEdge : Interrupt on either edge.
  *        - #PORT_InterruptLogicOne   : Interrupt when logic one.
  */
-static inline void PORT_DRV_SetPinInterruptConfig(PORT_Type *base, uint32_t pin, port_interrupt_t config)
+static inline void PORT_DRV_SetPinInterruptConfig(PORT_Type *base,
+                                                  uint32_t pin,
+                                                  port_interrupt_t config)
 {
-    base->PCR[pin] = (base->PCR[pin] & ~PORT_PCR_IRQC_MASK) | PORT_PCR_IRQC(config);
+    base->PCR[pin] = (base->PCR[pin] & ~PORT_PCR_IRQC_MASK) |
+                                                          PORT_PCR_IRQC(config);
 }
 
 /**
  * @brief Reads the whole port status flag.
  *
  *
- * @param base PORT peripheral base pointer.
+ * @param base  PORT peripheral base pointer.
  * @return Current port interrupt status flags, for example, 0x00010001 means the
  *         pin 0 and 16 have the interrupt.
  */
@@ -89,26 +92,15 @@ static inline uint32_t PORT_DRV_GetPinsInterruptFlags(PORT_Type *base)
 }
 
 /**
- * @brief Check if interrupt is pending in a specific Pin.
- *
- *
- * @param base PORT peripheral base pointer.
- * @return Mask of the pin if it's pending an interrupt.
- */
-static inline uint32_t PORT_DRV_CheckPinInterruptFlags(PORT_Type *base, uint32_t pin)
-{
-    return base->ISFR & (1u << pin);
-}
-
-/**
  * @brief Clears the multiple pin interrupt status flag.
  *
- * @param base PORT peripheral base pointer.
- * @param mask PORT pin number macro.
+ * @param base  PORT peripheral base pointer.
+ * @param mask  PORT pin number macro.
  */
-static inline void PORT_DRV_ClearPinsInterruptFlags(PORT_Type *base, uint32_t mask)
+static inline void PORT_DRV_ClearPinsInterruptFlags(PORT_Type *base,
+                                                    uint32_t mask)
 {
-    base->ISFR |= mask;
+    base->ISFR = mask;
 }
 
 #endif /* DRIVERS_DRIVER_PORT_H_ */
