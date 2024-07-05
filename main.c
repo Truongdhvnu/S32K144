@@ -36,6 +36,7 @@ volatile uint32_t firstSW3Press      = 0;
 volatile uint32_t pressSW3Count      = 0;
 
 volatile uint8_t volume = 0;
+volatile uint8_t volume = 0;
 volatile uint32_t current_adc_value  = 0;
 
 volatile uint8_t  vol_flag           = 0;
@@ -113,6 +114,11 @@ static inline void Check_SW3()
     {
         /* Nothing */
     }
+}
+
+static inline uint8_t ADC_value_scale(uint32_t value)
+{
+    return (uint8_t)(value * 100 / ADC_RESOLUTION + 1);
 }
 
 /******************************************************************************
