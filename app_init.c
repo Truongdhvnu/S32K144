@@ -21,10 +21,6 @@ void initSCG()
     CLOCK_DRV_EnableFirc();
     /* Wait for FIRC clock to be valid */
     while (0UL == CLOCK_DRV_GetFircValidStatus());
-
-    /* Enable PORTs clock */
-    CLOCK_DRV_EnableClock(CLOCK_PORTC);
-    CLOCK_DRV_EnableClock(CLOCK_PORTD);
 }
 
 void initGPIO()
@@ -38,6 +34,11 @@ void initGPIO()
     {
         .pinDirection = GPIO_DigitalInput,
     };
+
+
+    /* Enable PORTs clock */
+    CLOCK_DRV_EnableClock(CLOCK_PORTC);
+    CLOCK_DRV_EnableClock(CLOCK_PORTD);
 
     /* LEDs init */
     PORT_DRV_SetPinMux(PORTD, 15, 1);
