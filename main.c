@@ -9,6 +9,7 @@
  ******************************************************************************/
 #define DOUBLE_CLICK_TIME   500
 #define ADC_RESOLUTION      4095
+#define ADC_UPDATE_DUR      200
 
 typedef enum {
     NONE,
@@ -36,7 +37,6 @@ volatile uint32_t firstSW3Press      = 0;
 volatile uint32_t pressSW3Count      = 0;
 
 volatile uint8_t volume = 0;
-volatile uint8_t volume = 0;
 volatile uint32_t current_adc_value  = 0;
 
 volatile uint8_t  vol_flag           = 0;
@@ -56,8 +56,10 @@ static inline uint8_t adc_value_to_volume(uint32_t value)
 
 static inline void Check_ADC()
 {
-    if(tickCount % 200 == 0)
-    {       
+    static uint32_t update_time = ADC_UPDATE_DUR;
+    if(tickCount > update_time)
+    {   
+        update_time += ADC_UPDATE_DUR;
         if(volume != adc_value_to_volume(current_adc_value))
         {
             vol_flag = 1;
