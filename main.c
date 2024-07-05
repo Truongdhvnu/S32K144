@@ -11,6 +11,8 @@
 #include "driver_gpio.h"
 #include "driver_sim.h"
 #include "driver_trgmux.h"
+#include "driver_dma.h"
+#include "driver_dmamux.h"
 #include "encode.h"
 #include "driver_systick.h"
 
@@ -123,18 +125,16 @@ void initADC()
         .sampleClockCount           = 13U,
         .enableContinuousConversion = false,
         .triggerType                = ADC_TriggerTypeHardware,
-        .dmaEnable                  = false,
+        .dmaEnable                  = true,
     };
     adc_channel_config_t channel_config =
     {
         .channelNumber                        = 12U,
-        .enableInterruptOnConversionCompleted = true,
+        .enableInterruptOnConversionCompleted = false,
     };
 
     ADC_DRV_Init(ADC0, &init_config);
     ADC_DRV_SetChannelConfig(ADC0, 0, &channel_config);
-
-    NVIC_EnableIRQ(ADC0_IRQn);
 }
 
 void initUART()
@@ -196,20 +196,27 @@ void initSIM()
     TRGMUX_DRV_SetTriggerSource(TRGMUX, TRGMUX_ADC0_INDEX, TRGMUX_TriggerInput0, TRGMUX_Source_LPIT_CH0);
 }
 
-//void UART_send_char(uint8_t data)
-//{
-//    while (!(LPUART1->STAT & LPUART_STAT_TDRE_MASK));
-//    LPUART1->DATA = data;
-//}
+void initDMA()
+{
+    dma_channel_config_t config =
+    {
+        .srcAddr          = DMA_TCD_SADDR_SADDR(&(ADC0->R[0])),
+        .srcTransferSize  = DMA_TRANSFER_SIZE_4B,
+        .destAddr         = DMA_TCD_DADDR_DADDR(&current_adc_value),
+        .destTransferSize = DMA_TRANSFER_SIZE_4B,
+    };
+
+    DMA_DRV_SetChannelConfig(DMA, 0, &config);
+
+    CLOCK_DRV_EnableClock(CLOCK_DMAMUX);
+    DMAMUX_DRV_ChannelDisable(DMAMUX, 0);
+    DMAMUX_DRV_ChannelSourceSelect(DMAMUX, 0, DMAMUX_ADC0);
+    DMAMUX_DRV_ChannelEnable(DMAMUX, 0);
+}
 
 /******************************************************************************
  * IRQ handlers
  ******************************************************************************/
-void ADC0_IRQHandler(void)
-{
-    current_adc_value = ADC_DRV_GetChannelConversionValue(ADC0, 0) * 100 / ADC_RESOLUTION + 1;
-}
-
 void LPUART1_RxTx_IRQHandler(void)
 {
     temp = LPUART_DRV_ReadByte(LPUART1);
@@ -217,7 +224,7 @@ void LPUART1_RxTx_IRQHandler(void)
 }
 
 void PORTC_IRQHandler(void)
-{   
+{
     if (PORT_DRV_CheckPinInterruptFlags(PORTC, SWITCH_2_PIN)) {
         PORT_DRV_ClearPinsInterruptFlags(PORTC, (1u << SWITCH_2_PIN));
         pressSW2Count++;
@@ -280,6 +287,7 @@ int main(void)
     initUART();
     initADC();
     initLPIT();
+    initDMA();
     initSIM();
 
     SysTick_Config(SystemCoreClock/1000);
