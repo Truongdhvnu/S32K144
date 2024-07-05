@@ -7,7 +7,8 @@
 /******************************************************************************
  * Code
  ******************************************************************************/
-void GPIO_DRV_PinInit(GPIO_Type *base,uint32_t pin,const gpio_pin_config_t *config)
+void GPIO_DRV_PinInit(GPIO_Type *base,uint32_t pin,
+                      const gpio_pin_config_t *config)
 {
     if (config != NULL)
     {

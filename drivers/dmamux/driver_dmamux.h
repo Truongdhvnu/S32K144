@@ -42,7 +42,7 @@ static inline void DMAMUX_DRV_ChannelEnable(DMAMUX_Type * base, uint8_t channel)
  * @param base DMAMUX peripheral base address.
  * @param channel Channel index.
  */
-static inline void DMAMUX_DRV_ChannelDisable(DMAMUX_Type * base, uint8_t channel)
+static inline void DMAMUX_DRV_ChannelDisable(DMAMUX_Type * base,uint8_t channel)
 {
     base->CHCFG[channel] &= ~DMAMUX_CHCFG_ENBL(1);
 }

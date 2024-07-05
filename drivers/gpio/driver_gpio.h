@@ -34,7 +34,8 @@ typedef struct _gpio_pin_config
  * @param pin     GPIO port pin number
  * @param config  GPIO pin configuration pointer
  */
-void GPIO_DRV_PinInit(GPIO_Type *base,uint32_t pin,const gpio_pin_config_t *config);
+void GPIO_DRV_PinInit(GPIO_Type *base,uint32_t pin,
+                      const gpio_pin_config_t *config);
 
 /**
  * @brief Sets the output level of the multiple FGPIO pins to the logic 1 or 0.
@@ -45,7 +46,8 @@ void GPIO_DRV_PinInit(GPIO_Type *base,uint32_t pin,const gpio_pin_config_t *conf
  *        - 0: corresponding pin output low-logic level.
  *        - 1: corresponding pin output high-logic level.
  */
-static inline void GPIO_DRV_PinWrite(GPIO_Type *base, uint32_t pin, uint8_t output)
+static inline void GPIO_DRV_PinWrite(GPIO_Type *base, uint32_t pin,
+                                                      uint8_t output)
 {
     if (output == 0U)
     {
