@@ -48,7 +48,6 @@ volatile uint8_t  vol_flag           = 0;
 /******************************************************************************
  * Functions
  ******************************************************************************/
-
 static inline uint8_t adc_value_to_volume(uint32_t value)
 {
     return (uint8_t)(value * 100 / ADC_RESOLUTION + 1);
@@ -162,7 +161,7 @@ void SysTick_Handler()
  ******************************************************************************/
 int main(void)
 {
-    initClock();
+    initSCG();
     initGPIO();
     initUART();
     initADC();

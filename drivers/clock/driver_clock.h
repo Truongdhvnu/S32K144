@@ -26,18 +26,18 @@ typedef enum _clock_ip_name
 /* @brief Clock source for peripherals that support various clock selections. */
 typedef enum _clock_ip_src
 {
-    CLOCK_IpSrcNoneOrExt   = 0U, /*!< Clock is off or external clock is used. */
-    CLOCK_IpSrcSysOscAsync = 1U, /*!< System Oscillator async clock.          */
-    CLOCK_IpSrcSircAsync   = 2U, /*!< Slow IRC async clock.                   */
-    CLOCK_IpSrcFircAsync   = 3U, /*!< Fast IRC async clock.                   */
-    CLOCK_IpSrcLpFllAsync  = 5U  /*!< LPFLL async clock.                      */
+    CLOCK_IpSrcNoneOrExt   = 0U, /* Clock is off or external clock is used. */
+    CLOCK_IpSrcSysOscAsync = 1U, /* System Oscillator async clock.          */
+    CLOCK_IpSrcSircAsync   = 2U, /* Slow IRC async clock.                   */
+    CLOCK_IpSrcFircAsync   = 3U, /* Fast IRC async clock.                   */
+    CLOCK_IpSrcLpFllAsync  = 5U  /* LPFLL async clock.                      */
 } clock_ip_src_t;
 
 /* @brief SCG asynchronous clock type. */
 typedef enum _scg_async_clk
 {
-    SCG_AsyncDiv1Clk, /*!< The async clock by DIV1, e.g. SIRCDIV1_CLK. */
-    SCG_AsyncDiv2Clk, /*!< The async clock by DIV2, e.g. SIRCDIV2_CLK. */
+    SCG_AsyncDiv1Clk, /* The async clock by DIV1, e.g. SIRCDIV1_CLK. */
+    SCG_AsyncDiv2Clk, /* The async clock by DIV2, e.g. SIRCDIV2_CLK. */
 } scg_async_clk_t;
 
 /* @brief SCG asynchronous clock divider value. */
@@ -89,6 +89,24 @@ static inline void CLOCK_DRV_DisableClock(clock_ip_name_t name)
 static inline void CLOCK_DRV_SetIpSrc(clock_ip_name_t name, clock_ip_src_t src)
 {
     PCC->PCCn[name] |= PCC_PCCn_PCS(src);
+}
+
+/* @brief Enable the SCG fast IRC clock. */
+static inline void CLOCK_DRV_EnableFirc()
+{
+    SCG->FIRCCSR |= SCG_FIRCCSR_FIRCEN(1);
+}
+
+/* @brief Disable the SCG fast IRC clock. */
+static inline void CLOCK_DRV_DisableFirc()
+{
+    SCG->FIRCCSR &= ~SCG_FIRCCSR_FIRCEN_MASK;
+}
+
+/* @brief Get the SCG fast IRC clock valid status by checking FIRCVLD flag. */
+static inline uint32_t CLOCK_DRV_GetFircValidStatus()
+{
+    return (SCG->FIRCCSR & SCG_FIRCCSR_FIRCVLD_MASK);
 }
 
 /**
