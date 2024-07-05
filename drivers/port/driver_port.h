@@ -92,6 +92,18 @@ static inline uint32_t PORT_DRV_GetPinsInterruptFlags(PORT_Type *base)
 }
 
 /**
+ * @brief Check if interrupt is pending in a specific Pin.
+ *
+ *
+ * @param base PORT peripheral base pointer.
+ * @return Mask of the pin if it's pending an interrupt.
+ */
+static inline uint32_t PORT_DRV_CheckPinInterruptFlags(PORT_Type *base, uint32_t pin)
+{
+    return base->ISFR & (1u << pin);
+}
+
+/**
  * @brief Clears the multiple pin interrupt status flag.
  *
  * @param base  PORT peripheral base pointer.
