@@ -3,6 +3,7 @@
  ******************************************************************************/
 #include "app_init.h"
 #include "encode.h"
+#include "queue.h"
 
 /******************************************************************************
  * Definitions
@@ -69,21 +70,24 @@ static inline void Check_ADC()
 
 static inline void Check_SW2()
 {
-    if(pressSW2Count == 1 && checkSW2 == 0)
+	static uint32_t preStateCount = 0;
+	uint32_t temp = pressSW2Count;
+	uint32_t diff = temp - preStateCount;
+    if(diff == 1 && checkSW2 == 0)
     {
         firstSW2Press = tickCount;
         checkSW2 = 1;
     }
-    if(pressSW2Count == 2)
+    else if(diff == 2)
     {
         sw2State = DOUBLE_CLICK;
-        pressSW2Count = 0;
+        preStateCount = temp;
         checkSW2 = 0;
     }
-    else if((tickCount - firstSW2Press > 500) && pressSW2Count == 1)
+    else if((tickCount - firstSW2Press > 500) && diff == 1)
     {
         sw2State = SINGLE_CLICK;
-        pressSW2Count = 0;
+        preStateCount = temp;
         checkSW2 = 0;
     }
     else
@@ -94,32 +98,30 @@ static inline void Check_SW2()
 
 static inline void Check_SW3()
 {
-    if(pressSW3Count == 1 && checkSW3 == 0)
-    {
-        firstSW3Press = tickCount;
-        checkSW3 = 1;
-    }
-    if(pressSW3Count == 2)
-    {
-        sw3State = DOUBLE_CLICK;
-        pressSW3Count = 0;
-        checkSW3 = 0;
-    }
-    else if((tickCount - firstSW3Press > 500) && pressSW3Count == 1)
-    {
-        sw3State = SINGLE_CLICK;
-        pressSW3Count = 0;
-        checkSW3 = 0;
-    }
-    else
-    {
-        /* Nothing */
-    }
-}
-
-static inline uint8_t ADC_value_scale(uint32_t value)
-{
-    return (uint8_t)(value * 100 / ADC_RESOLUTION + 1);
+	static uint32_t preStateCount = 0;
+	uint32_t temp = pressSW3Count;
+	uint32_t diff = temp - preStateCount;
+	if(diff == 1 && checkSW3 == 0)
+	{
+		firstSW3Press = tickCount;
+		checkSW3 = 1;
+	}
+	else if(diff == 2)
+	{
+		sw3State = DOUBLE_CLICK;
+		preStateCount = temp;
+		checkSW3 = 0;
+	}
+	else if((tickCount - firstSW3Press > 500) && diff == 1)
+	{
+		sw3State = SINGLE_CLICK;
+		preStateCount = temp;
+		checkSW3 = 0;
+	}
+	else
+	{
+		/* Nothing */
+	}
 }
 
 /******************************************************************************
@@ -127,7 +129,16 @@ static inline uint8_t ADC_value_scale(uint32_t value)
  ******************************************************************************/
 void LPUART1_RxTx_IRQHandler(void)
 {
-    temp = LPUART_DRV_ReadByte(LPUART1);
+	if(LPUART1->STAT & LPUART_STAT_RDRF_MASK) {
+		temp = LPUART_DRV_ReadByte(LPUART1);
+        queue_put_data(temp);
+		// if (temp == OPTION_PLAYING) {
+		// 	GPIO_DRV_PinWrite(PTD, LED_RED_PIN, 0);
+		// } else if (temp == OPTION_PAUSE) {
+		// 	GPIO_DRV_PinWrite(PTD, LED_RED_PIN, 1);
+		// }
+
+	}
 //    LPUART_DRV_WriteByte(LPUART1, current_adc_value);
 }
 
@@ -137,13 +148,11 @@ void PORTC_IRQHandler(void)
     {
         PORT_DRV_ClearPinsInterruptFlags(PORTC, (1u << SWITCH_2_PIN));
         pressSW2Count++;
-        GPIO_DRV_PortToggle(PTD, LED_BLUE_PIN);
     }
     else if (PORT_DRV_CheckPinInterruptFlags(PORTC, SWITCH_3_PIN))
     {
         PORT_DRV_ClearPinsInterruptFlags(PORTC, (1u << SWITCH_3_PIN));
         pressSW3Count++;
-        GPIO_DRV_PortToggle(PTD, LED_RED_PIN);
     }
     else
     {
@@ -172,9 +181,6 @@ int main(void)
     SysTick_Config(SystemCoreClock/1000);
     NVIC_EnableIRQ(SysTick_IRQn);
 
-    char* data = "Start\n";
-    LPUART_DRV_WriteBlocking(LPUART1, (uint8_t *)data, 6);
-
     while(1) {
         Check_ADC();
         Check_SW2();
@@ -183,52 +189,48 @@ int main(void)
         switch (sw2State)
         {
             case SINGLE_CLICK:
-//                UART1_SendChar('n');
-                push_message('5', '0');
+                push_message(OPTION_UP, MESSAGE_DEFAULT_VALUE);
                 sw2State = NONE;
                 break;
             case DOUBLE_CLICK:
-//                UART1_SendChar('p');
-                push_message('6', '0');
+                push_message(OPTION_FORWARD, MESSAGE_DEFAULT_VALUE);
                 sw2State = NONE;
                 break;
-            case LONG_CLICK:
-                break;
-            case NONE:
-                break;
             default:
-                /* Nothing */
                 break;
         }
 
         switch (sw3State)
         {
             case SINGLE_CLICK:
-//                UART1_SendChar('s');
-                push_message('2', '0');
+                push_message(OPTION_CONFIRM, MESSAGE_DEFAULT_VALUE);
                 sw3State = NONE;
                 break;
             case DOUBLE_CLICK:
-//                UART1_SendChar('r');
-                push_message('3', '0');
+                push_message(OPTION_GO_BACK, MESSAGE_DEFAULT_VALUE);
                 sw3State = NONE;
                 break;
-            case LONG_CLICK:
-                break;
-            case NONE:
-                break;
             default:
-                /* Nothing */
                 break;
         }
 
         if(vol_flag)
         {
-            push_message('9', volume);
+            push_message(OPTION_VOLTAGE, volume);
             vol_flag = 0;
         }
-    }
 
+        if (!queue_empty()) {
+            uint8_t* data = queue_get_data();
+            if(checkReceiveCommandValid(data) == MESSAGE_CORRECT) {
+                if (data[MEASSAGE_OPTION_BYTE] == OPTION_PLAYING) {
+                    GPIO_DRV_PinWrite(PTD, LED_RED_PIN, 0);
+                } else if (data[MEASSAGE_OPTION_BYTE] == OPTION_PAUSE){
+                    GPIO_DRV_PinWrite(PTD, LED_RED_PIN, 1);
+                }
+            }
+        }
+    }
     return 0;
 }
 
