@@ -34,7 +34,8 @@ void LPIT_DRV_Init(LPIT_Type *base, const lpit_config_t *config)
                  LPIT_MCR_M_CEN_MASK);
 }
 
-void LPIT_DRV_SetupChannel(LPIT_Type *base, lpit_chnl_t channel, const lpit_chnl_params_t *chnlSetup)
+void LPIT_DRV_SetupChannel(LPIT_Type *base, lpit_chnl_t channel,
+                           const lpit_chnl_params_t *chnlSetup)
 {
     assert(NULL != chnlSetup);
 

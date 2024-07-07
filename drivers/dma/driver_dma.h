@@ -35,7 +35,8 @@ typedef struct _dma_channel_config
  * @param channel  Channel index.
  * @param config   Pointer to "dma_channel_config_t" structure.
  */
-void DMA_DRV_SetChannelConfig(DMA_Type * base, uint32_t channel, const dma_channel_config_t *config);
+void DMA_DRV_SetChannelConfig(DMA_Type * base, uint32_t channel,
+                              const dma_channel_config_t *config);
 
 /**
  * @brief Starts an DMA channel.
@@ -47,7 +48,6 @@ static inline void DMA_DRV_StartChannel(DMA_Type * base, uint8_t channel)
 {
     base->TCD[channel].CSR |= DMAMUX_CHCFG_SOURCE(EDMA_REQ_ADC0);
 }
-
 
 
 #endif /* DRIVERS_DMA_DRIVER_EDMA_H_ */

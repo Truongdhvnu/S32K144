@@ -87,7 +87,8 @@ static inline void LPIT_DRV_Deinit(LPIT_Type *base)
  * @param channel    Channel that is being configured.
  * @param chnlSetup  Configuration parameters.
  */
-void LPIT_DRV_SetupChannel(LPIT_Type *base, lpit_chnl_t channel, const lpit_chnl_params_t *chnlSetup);
+void LPIT_DRV_SetupChannel(LPIT_Type *base, lpit_chnl_t channel,
+                           const lpit_chnl_params_t *chnlSetup);
 
 /**
  * @brief Enables the selected PIT interrupts.
@@ -136,7 +137,8 @@ static inline void LPIT_DRV_SetTimerPeriod(LPIT_Type *base,
  *
  * @return Current timer counting value in ticks.
  */
-static inline uint32_t LPIT_DRV_GetCurrentTimerCount(LPIT_Type *base, lpit_chnl_t channel)
+static inline uint32_t LPIT_DRV_GetCurrentTimerCount(LPIT_Type *base,
+                                                     lpit_chnl_t channel)
 {
     return base->TMR[channel].CVAL;
 }

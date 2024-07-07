@@ -97,8 +97,9 @@ void LPUART_DRV_Init(LPUART_Type *base, const lpuart_config_t *config, uint32_t 
     base->CTRL = temp;
 
     /* Clear all status flags */
-    temp = (LPUART_STAT_RXEDGIF_MASK | LPUART_STAT_IDLE_MASK | LPUART_STAT_OR_MASK | LPUART_STAT_NF_MASK |
-            LPUART_STAT_FE_MASK | LPUART_STAT_PF_MASK);
+    temp = (LPUART_STAT_RXEDGIF_MASK | LPUART_STAT_IDLE_MASK |
+            LPUART_STAT_OR_MASK      | LPUART_STAT_NF_MASK   |
+            LPUART_STAT_FE_MASK      | LPUART_STAT_PF_MASK    );
 
     /* Set data bits order. */
     if (true == config->isMsb)
