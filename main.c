@@ -4,13 +4,15 @@
 #include "app_init.h"
 #include "encode.h"
 #include "queue.h"
-
+#include "driver_ftm.h"
 /******************************************************************************
  * Definitions
  ******************************************************************************/
 #define DOUBLE_CLICK_TIME   500
 #define ADC_RESOLUTION      4095
 #define ADC_UPDATE_DUR      200
+#define COLOUR_NUMBERS 		24
+#define LED_CHANGE_DUR		200
 
 typedef enum {
     NONE,
@@ -42,6 +44,36 @@ volatile uint32_t current_adc_value  = 0;
 
 volatile uint8_t  vol_flag           = 0;
 
+volatile uint8_t  playing_flag       = 0;
+
+
+uint8_t colors[COLOUR_NUMBERS][3] = {
+    {255, 0, 0},
+    {255, 64, 0},
+    {255, 127, 0},
+    {255, 191, 0},
+    {255, 255, 0},
+    {191, 255, 0},
+    {127, 255, 0},
+    {64, 255, 0},
+    {0, 255, 0},
+    {0, 255, 64},
+    {0, 255, 127},
+    {0, 255, 191},
+    {0, 255, 255},
+    {0, 191, 255},
+    {0, 127, 255},
+    {0, 64, 255},
+    {0, 0, 255},
+    {37, 0, 230},
+    {75, 0, 205},
+    {111, 0, 180},
+    {148, 0, 155},
+    {185, 0, 130},
+    {222, 0, 105},
+    {255, 0, 80}
+};
+
 /******************************************************************************
  * Prototypes
  ******************************************************************************/
@@ -72,19 +104,19 @@ static inline void Check_SW2()
 {
 	static uint32_t preStateCount = 0;
 	uint32_t temp = pressSW2Count;
-	uint32_t diff = temp - preStateCount;
-    if(diff == 1 && checkSW2 == 0)
+	uint32_t count_diff = temp - preStateCount;
+    if(count_diff == 1 && checkSW2 == 0)
     {
         firstSW2Press = tickCount;
         checkSW2 = 1;
     }
-    else if(diff == 2)
+    else if(count_diff == 2)
     {
         sw2State = DOUBLE_CLICK;
         preStateCount = temp;
         checkSW2 = 0;
     }
-    else if((tickCount - firstSW2Press > 500) && diff == 1)
+    else if((tickCount - firstSW2Press > DOUBLE_CLICK_TIME) && count_diff == 1)
     {
         sw2State = SINGLE_CLICK;
         preStateCount = temp;
@@ -100,19 +132,19 @@ static inline void Check_SW3()
 {
 	static uint32_t preStateCount = 0;
 	uint32_t temp = pressSW3Count;
-	uint32_t diff = temp - preStateCount;
-	if(diff == 1 && checkSW3 == 0)
+	uint32_t count_diff = temp - preStateCount;
+	if(count_diff == 1 && checkSW3 == 0)
 	{
 		firstSW3Press = tickCount;
 		checkSW3 = 1;
 	}
-	else if(diff == 2)
+	else if(count_diff == 2)
 	{
 		sw3State = DOUBLE_CLICK;
 		preStateCount = temp;
 		checkSW3 = 0;
 	}
-	else if((tickCount - firstSW3Press > 500) && diff == 1)
+	else if((tickCount - firstSW3Press > DOUBLE_CLICK_TIME) && count_diff == 1)
 	{
 		sw3State = SINGLE_CLICK;
 		preStateCount = temp;
@@ -124,22 +156,24 @@ static inline void Check_SW3()
 	}
 }
 
+void change_colour();
+void turn_off_led();
+
+static inline void Check_Playing() {
+    if (playing_flag == 0){
+    	turn_off_led();
+    } else if (tickCount % LED_CHANGE_DUR == 0 && playing_flag == 1) {
+        change_colour();
+    }
+}
 /******************************************************************************
  * IRQ handlers
  ******************************************************************************/
 void LPUART1_RxTx_IRQHandler(void)
 {
 	if(LPUART1->STAT & LPUART_STAT_RDRF_MASK) {
-		temp = LPUART_DRV_ReadByte(LPUART1);
-        queue_put_data(temp);
-		// if (temp == OPTION_PLAYING) {
-		// 	GPIO_DRV_PinWrite(PTD, LED_RED_PIN, 0);
-		// } else if (temp == OPTION_PAUSE) {
-		// 	GPIO_DRV_PinWrite(PTD, LED_RED_PIN, 1);
-		// }
-
+        queue_put_data(LPUART_DRV_ReadByte(LPUART1));
 	}
-//    LPUART_DRV_WriteByte(LPUART1, current_adc_value);
 }
 
 void PORTC_IRQHandler(void)
@@ -177,6 +211,7 @@ int main(void)
     initLPIT();
     initDMA((uint32_t)&current_adc_value);
     initSIM();
+    initFTM();
 
     SysTick_Config(SystemCoreClock/1000);
     NVIC_EnableIRQ(SysTick_IRQn);
@@ -224,14 +259,31 @@ int main(void)
             uint8_t* data = queue_get_data();
             if(checkReceiveCommandValid(data) == MESSAGE_CORRECT) {
                 if (data[MEASSAGE_OPTION_BYTE] == OPTION_PLAYING) {
-                    GPIO_DRV_PinWrite(PTD, LED_RED_PIN, 0);
+                    playing_flag = 1;
                 } else if (data[MEASSAGE_OPTION_BYTE] == OPTION_PAUSE){
-                    GPIO_DRV_PinWrite(PTD, LED_RED_PIN, 1);
+                    playing_flag = 0;
                 }
             }
         }
+
+        Check_Playing();
     }
     return 0;
+}
+
+void change_colour() {
+	static int index = 0;
+    FTM_DRV_setDutyCycle(FTM0, FTM_Chnl_0, (uint32_t)(colors[index][0] / 2.55));
+    FTM_DRV_setDutyCycle(FTM0, FTM_Chnl_1, (uint32_t)(colors[index][1] / 2.55));
+    FTM_DRV_setDutyCycle(FTM0, FTM_Chnl_2, (uint32_t)(colors[index][2] / 2.55));
+	index++;
+	index = index % COLOUR_NUMBERS;
+}
+
+void turn_off_led() {
+    FTM_DRV_setDutyCycle(FTM0, FTM_Chnl_0, 100);
+    FTM_DRV_setDutyCycle(FTM0, FTM_Chnl_1, 100);
+    FTM_DRV_setDutyCycle(FTM0, FTM_Chnl_2, 100);
 }
 
 /******************************************************************************

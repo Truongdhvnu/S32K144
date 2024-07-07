@@ -41,12 +41,9 @@ void initGPIO()
     CLOCK_DRV_EnableClock(CLOCK_PORTD);
 
     /* LEDs init */
-    PORT_DRV_SetPinMux(PORTD, 15, 1);
-    GPIO_DRV_PinInit(PTD, 15, &LEDs_config);
-    PORT_DRV_SetPinMux(PORTD, 16, 1);
-    GPIO_DRV_PinInit(PTD, 16, &LEDs_config);
-    PORT_DRV_SetPinMux(PORTD, 0, 1);
-    GPIO_DRV_PinInit(PTD, 0, &LEDs_config);
+    PORT_DRV_SetPinMux(PORTD, 15, 2);   /* FTM0CH0 */
+    PORT_DRV_SetPinMux(PORTD, 16, 2);   /* FTM0CH1 */
+    PORT_DRV_SetPinMux(PORTD, 0, 2);    /* FTM0CH2 */
 
     /* SWITCHs init */
     PORT_DRV_SetPinMux(PORTC, 12, 1);
@@ -184,6 +181,35 @@ void initDMA(uint32_t storing_address)
     DMAMUX_DRV_ChannelEnable(DMAMUX, 0);
 }
 
+void initFTM() {
+    SCG->FIRCCSR &= ~SCG_FIRCCSR_FIRCEN_MASK;
+    SCG->FIRCDIV |= SCG_FIRCDIV_FIRCDIV1(3);      // Divided by 4
+    SCG->FIRCCSR |= SCG_FIRCCSR_FIRCEN_MASK;
+	
+    PCC->PCCn[PCC_FTM0_INDEX] &= ~PCC_PCCn_CGC_MASK;
+    PCC->PCCn[PCC_FTM0_INDEX] |= PCC_PCCn_PCS(3);
+    PCC->PCCn[PCC_FTM0_INDEX] |= PCC_PCCn_CGC_MASK;
+	
+    ftm_config_t config = {
+        .clk_src = EXT_CLK,
+        .pre_scale = FTM_PRESCALE_1,
+        .modulo = 6000,
+        .freq = 0,
+    };
+    ftm_chnl_prarams_t chnlSetup = {
+        .mode = EDGE_ALIGNED_LOW_TRUE,
+        .duty = 10,
+        .intEnable = 0
+    };
+
+    FTM_DRV_Init(FTM0, &config, SystemCoreClock/4);
+
+    FTM_DRV_SetupChannel(FTM0, FTM_Chnl_0, &config, &chnlSetup);
+    FTM_DRV_SetupChannel(FTM0, FTM_Chnl_1, &config, &chnlSetup);
+    FTM_DRV_SetupChannel(FTM0, FTM_Chnl_2, &config, &chnlSetup);
+
+    FTM_DRV_StartCounters(FTM0, &config);
+}
 /******************************************************************************
  * EOF
  ******************************************************************************/

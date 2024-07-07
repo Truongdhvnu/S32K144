@@ -17,6 +17,7 @@
 #include "driver_dma.h"
 #include "driver_dmamux.h"
 #include "driver_systick.h"
+#include "driver_ftm.h"
 
 /******************************************************************************
  * Definitions
@@ -55,6 +56,8 @@ void initSIM();
  */
 void initDMA(uint32_t storing_address);
 
+/* @brief Initialize the FTM module. */
+void initFTM();
 #endif /* APP_INIT_H_ */
 
 /******************************************************************************
