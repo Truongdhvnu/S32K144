@@ -255,15 +255,15 @@ int main(void)
             vol_flag = 0;
         }
 
-        if (!queue_empty()) {
+        if (!is_queue_empty()) {
             uint8_t* data = queue_get_data();
-            if(checkReceiveCommandValid(data) == MESSAGE_CORRECT) {
+//            if(checkReceiveCommandValid(data) == MESSAGE_CORRECT) {
                 if (data[MEASSAGE_OPTION_BYTE] == OPTION_PLAYING) {
                     playing_flag = 1;
                 } else if (data[MEASSAGE_OPTION_BYTE] == OPTION_PAUSE){
                     playing_flag = 0;
                 }
-            }
+//            }
         }
 
         Check_Playing();

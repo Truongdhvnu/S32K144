@@ -18,6 +18,7 @@ void initSCG()
      */
     CLOCK_DRV_DisableFirc();
     CLOCK_DRV_SetFircAsyncClkDiv(SCG_AsyncDiv2Clk, SCG_AsyncClkDivBy1);
+    CLOCK_DRV_SetFircAsyncClkDiv(SCG_AsyncDiv1Clk, SCG_AsyncClkDivBy4);
     CLOCK_DRV_EnableFirc();
     /* Wait for FIRC clock to be valid */
     while (0UL == CLOCK_DRV_GetFircValidStatus());
@@ -25,11 +26,6 @@ void initSCG()
 
 void initGPIO()
 {
-    gpio_pin_config_t LEDs_config =
-    {
-        .pinDirection = GPIO_DigitalOutput,
-        .outputLogic = 1,
-    };
     gpio_pin_config_t SWITCHs_config =
     {
         .pinDirection = GPIO_DigitalInput,
@@ -182,18 +178,10 @@ void initDMA(uint32_t storing_address)
 }
 
 void initFTM() {
-    SCG->FIRCCSR &= ~SCG_FIRCCSR_FIRCEN_MASK;
-    SCG->FIRCDIV |= SCG_FIRCDIV_FIRCDIV1(3);      // Divided by 4
-    SCG->FIRCCSR |= SCG_FIRCCSR_FIRCEN_MASK;
-	
-    PCC->PCCn[PCC_FTM0_INDEX] &= ~PCC_PCCn_CGC_MASK;
-    PCC->PCCn[PCC_FTM0_INDEX] |= PCC_PCCn_PCS(3);
-    PCC->PCCn[PCC_FTM0_INDEX] |= PCC_PCCn_CGC_MASK;
-	
     ftm_config_t config = {
-        .clk_src = EXT_CLK,
+        .clk_src = FTM_EXT_CLK,
         .pre_scale = FTM_PRESCALE_1,
-        .modulo = 6000,
+        .resolution = 6000,
         .freq = 0,
     };
     ftm_chnl_prarams_t chnlSetup = {
@@ -201,6 +189,11 @@ void initFTM() {
         .duty = 10,
         .intEnable = 0
     };
+
+    /* FTM clock source config*/
+    CLOCK_DRV_DisableClock(CLK_FTM0);
+    CLOCK_DRV_SetIpSrc(CLK_FTM0, CLOCK_IpSrcFircAsync);
+    CLOCK_DRV_EnableClock(CLK_FTM0);
 
     FTM_DRV_Init(FTM0, &config, SystemCoreClock/4);
 

@@ -3,6 +3,7 @@
 
 #include "S32K144.h"
 #include "encode.h"
+#include "driver_common.h"
 /******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -36,13 +37,13 @@ uint8_t* queue_get_data();
   \brief     check if queue is empty
   \return    1 if queue is empty, 0 if not
  */
-uint8_t queue_empty();
+bool is_queue_empty();
 
 /**
   \brief     check if queue is full
   \return    1 if queue is full, 0 if not
  */
-uint8_t queue_full();
+bool is_queue_full();
 
 uint8_t check_message();
 

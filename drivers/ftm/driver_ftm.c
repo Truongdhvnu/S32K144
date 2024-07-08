@@ -1,7 +1,27 @@
+/******************************************************************************
+ * Includes
+ ******************************************************************************/
 #include "driver_ftm.h"
 
+/******************************************************************************
+ * Definitions
+ ******************************************************************************/
+
+/******************************************************************************
+ * Code
+ ******************************************************************************/
+
+/**
+ * brief Configure the FTM with a configuration struture
+ * User can only set FTM with a certain Frequency or Resolution
+ * If user want to set a certain frequency, set the resolution equal 0 and vice versa
+ * 
+ * The Resolution must be less than FTM_MODULO_MAX (65535)
+ * 
+ * note This API should be called at the beginning of the application using the FTM driver.
+ */
 void FTM_DRV_Init(FTM_Type *base, ftm_config_t* config, uint32_t srcClock_freq) {
-    // assert(NULL != config);
+    assert(NULL != config);
 
     FTM_DRV_Write_Protect_Disable();
 
@@ -11,12 +31,12 @@ void FTM_DRV_Init(FTM_Type *base, ftm_config_t* config, uint32_t srcClock_freq) 
 	base->POL = 0x00000000;    	/* Polarity for all channels is active high (default) 	    */
 
     if (config->freq == 0) {
-        // assert(mod < FTM_MODULO_MAX);
-        base->MOD = config->modulo;
-        config->freq = srcClock_freq / ((config->modulo + 1) * config->pre_scale);
+        assert(config->resolution < FTM_MODULO_MAX);
+        base->MOD = config->resolution;
+        config->freq = srcClock_freq / ((config->resolution + 1) * config->pre_scale);
     } else if (config->freq != 0) {
         uint32_t mod = (srcClock_freq / (config->freq * config->pre_scale)) - 1;
-        // assert(mod < FTM_MODULO_MAX);
+        assert(mod < FTM_MODULO_MAX);
         base->MOD = mod;
     }
 }
@@ -32,7 +52,7 @@ void FTM_DRV_SetupChannel(FTM_Type *base, ftm_chnl_t channel, ftm_config_t* conf
             base->CONTROLS[channel].CnSC = FTM_CnSC_MSB_MASK
 							               |FTM_CnSC_ELSB_MASK
                                            |FTM_CnSC_CHIE(chnlSetup->intEnable);
-            base->CONTROLS[channel].CnV = config->modulo * chnlSetup->duty / 100;
+            base->CONTROLS[channel].CnV = config->resolution * chnlSetup->duty / 100;
             break;
         default:
             break;

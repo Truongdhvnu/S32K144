@@ -16,8 +16,8 @@ static struct queue QUEUE = { .buffer = QUEUE_BUFFER,      \
 							  .head_2D = 0,				   \
 							  .tail    = 0,				   \
 					        };
-
-static uint8_t QUEUE_AVAILABLE = BUFFER_SIZE_2D;
+                            
+static bool queue_full_status = false;
 
 /******************************************************************************
  * Public functions
@@ -33,23 +33,31 @@ void queue_put_data(const uint8_t data)
 	{
 		QUEUE.head_1D = 0;
 		QUEUE.head_2D++;
-		QUEUE_AVAILABLE--;
-	}
-	/* Reset 2D index */
-	if (QUEUE.head_2D == QUEUE.size_2D)
-	{
-		QUEUE.head_2D = 0;
+        /* Reset 2D index */
+        if (QUEUE.head_2D == QUEUE.size_2D)
+        {
+            QUEUE.head_2D = 0;
+        }
+        if (QUEUE.head_2D == QUEUE.tail) 
+        {
+            queue_full_status = true;
+        }
 	}
 }
 
 uint8_t* queue_get_data()
-{
+{   
+    if (is_queue_empty()) {
+        return NULL;
+    }
 	/* Take 1 array from queue */
 	uint8_t* data = QUEUE.buffer[QUEUE.tail];
+    if (QUEUE.head_2D == QUEUE.tail) 
+    {
+        queue_full_status = false;
+    }
 	/* Increase tail index */
 	QUEUE.tail++;
-	/* Increase queue available */
-	QUEUE_AVAILABLE++;
 	/* Reset tail index */
 	if (QUEUE.tail == QUEUE.size_2D)
 	{
@@ -59,14 +67,14 @@ uint8_t* queue_get_data()
 	return data;
 }
 
-uint8_t queue_empty()
+inline bool is_queue_empty()
 {
-	return (QUEUE_AVAILABLE == BUFFER_SIZE_2D);
+    return (!queue_full_status) && (QUEUE.tail == QUEUE.head_2D);
 }
 
-uint8_t queue_full()
+inline bool is_queue_full()
 {
-	return (QUEUE_AVAILABLE == 0);
+    return queue_full_status;
 }
 
 /******************************************************************************

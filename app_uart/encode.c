@@ -4,7 +4,7 @@
 #include "driver_uart.h"
 
 uint8_t check_message() {
-    if (!queue_empty()) {
+    if (!is_queue_empty()) {
         uint8_t* new_message = queue_get_data();
 
         // Check start & stop byte
